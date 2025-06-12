@@ -4,16 +4,25 @@ pipeline{
 
     stages{
 
-        stage('Run Test'){
+        stage('Start Selenium Grid'){
             steps{
-                bat "docker-compose up"
+                bat "docker-compose -f selenium-grid.yaml up -d"
             }
         }
 
-        stage('Bring Grid Down'){
+        stage('Run Tests'){
             steps{
-                bat "docker-compose down"
+                bat "docker-compose -f test-suite.yaml up"
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Stopping Selenium Grid & test-suites container...'
+            bat "docker-compose -f selenium-grid.yaml down"
+            bat "docker-compose -f test-suite.yaml down"
+
         }
     }
 }
