@@ -1,4 +1,4 @@
-pipeline{
+pipeline {
 
     agent any
 
@@ -6,21 +6,26 @@ pipeline{
         choice choices: ['chrome', 'firefox'], description: 'Select the browser', name: 'BROWSER'
     }
 
-    stages{
+    stages {
 
-        stage('Start Selenium Grid'){
-            steps{
+        stage('Start Selenium Grid') {
+            steps {
                 bat "docker-compose -f selenium-grid.yaml up --scale ${params.BROWSER}=2 -d"
             }
         }
 
-        stage('Run Tests'){
-            steps{
+        stage('Run Tests') {
+            steps {
                 bat "docker-compose -f test-suite.yaml up"
+                script {
+                    if (fileExists('output/flight-reservation/testng-failed.xml') || fileExists('output/vendor-portal/testng-failed.xml')) {
+                        error ('Tests failed, check the reports for details.')
+                    }
+                }
             }
+
         }
     }
-
     post {
         always {
             echo 'Stopping Selenium Grid & test-suites container...'
