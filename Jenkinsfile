@@ -2,11 +2,15 @@ pipeline{
 
     agent any
 
+    parameters {
+        choice choices: ['chrome', 'firefox'], description: 'Select the browser', name: 'BROWSER'
+    }
+
     stages{
 
         stage('Start Selenium Grid'){
             steps{
-                bat "docker-compose -f selenium-grid.yaml up -d"
+                bat "docker-compose -f selenium-grid.yaml up --scale ${params.BROWSER}=2 -d"
             }
         }
 
